@@ -38,5 +38,10 @@ namespace WorldCupScoreboard
                 throw new InvalidOperationException("Match not found.");
             }
         }
+
+        public void FinishMatch(string homeTeamName, string awayTeamName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

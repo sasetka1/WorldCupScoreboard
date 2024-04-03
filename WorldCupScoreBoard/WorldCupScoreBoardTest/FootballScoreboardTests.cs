@@ -110,6 +110,21 @@ namespace WorldCupScoreboard.Tests
 
             CollectionAssert.AreEqual(expectedSummary, result);
         }
+
+        [Test]
+        public void FinishMatch_RemovesMatchFromScoreboard()
+        {
+            // Arrange
+            Team homeTeam = new Team("Spain", TeamType.Home);
+            Team awayTeam = new Team("Brazil", TeamType.Away);
+            _scoreboard.StartMatch(homeTeam, awayTeam);
+
+            // Act
+            _scoreboard.FinishMatch("Spain", "Brazil");
+
+            // Assert
+            Assert.That(_scoreboard.GetMatchesInProgress().Count(), Is.EqualTo(0));
+        }
     }
 
 
