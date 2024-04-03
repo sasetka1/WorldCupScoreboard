@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using WorldCupScoreboard.Models;
 
 namespace WorldCupScoreboard.Tests
 {
@@ -26,4 +27,6 @@ namespace WorldCupScoreboard.Tests
             Assert.That(_scoreboard.GetMatchesInProgress().Count(), Is.EqualTo(1));
         }
     }
+
+
 }
