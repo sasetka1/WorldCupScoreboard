@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using Moq;
 using WorldCupScoreboard.Models;
 using WorldCupScoreboard.Services;
+using WorldCupScoreboardTest;
 using Match = WorldCupScoreboard.Models.Match;
 
 namespace WorldCupScoreboard.Tests
@@ -10,18 +11,18 @@ namespace WorldCupScoreboard.Tests
     public class FootballScoreboardTests
     {
         private FootballScoreboardService _scoreboard;
+        private Mock<IValidator<(Team, Team)>> _mockTeamValidator;
 
         [SetUp]
         public void Setup()
         {
-            var mockTeamValidator = new Mock<IValidator<(Team, Team)>>();
-            mockTeamValidator.Setup(v => v.Validate(It.IsAny<(Team, Team)>())).Returns(new ValidationResult());
-            _scoreboard = new FootballScoreboardService(mockTeamValidator.Object);
-
+            _mockTeamValidator = FootballScoreboardTestHelper.CreateMockTeamValidator();
+            _scoreboard = new FootballScoreboardService(_mockTeamValidator.Object);
         }
 
+
         [Test]
-        public void StartNewMatch()
+        public void StartNewMatch_OnlyOneMatchInProgress()
         {
             // Arrange
             var homeTeam = new Team("Mexico", TeamType.Home);
@@ -42,7 +43,7 @@ namespace WorldCupScoreboard.Tests
             var awayTeam = new Team("Mexico", TeamType.Away);
 
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => _scoreboard.StartMatch(sameTeam, sameTeam));
+            Assert.Throws<ValidationException>(() => _scoreboard.StartMatch(sameTeam, sameTeam));
         }
 
         [Test]
@@ -53,7 +54,7 @@ namespace WorldCupScoreboard.Tests
             var awayTeam = new Team("Canada", TeamType.Home);
 
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => _scoreboard.StartMatch(sameTeam, sameTeam));
+            Assert.Throws<ValidationException>(() => _scoreboard.StartMatch(sameTeam, sameTeam));
         }
 
         [Test]
