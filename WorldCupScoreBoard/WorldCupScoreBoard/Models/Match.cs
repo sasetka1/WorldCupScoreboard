@@ -1,8 +1,12 @@
-﻿namespace WorldCupScoreboard.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WorldCupScoreboard.Models
 {
     public class Match
     {
+        [Required]
         public Team HomeTeam { get; }
+        [Required]
         public Team AwayTeam { get; }
         public int HomeScore { get; private set; }
         public int AwayScore { get; private set; } = 0;

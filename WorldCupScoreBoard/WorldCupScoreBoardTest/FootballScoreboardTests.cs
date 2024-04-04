@@ -1,25 +1,31 @@
-using System.Text.RegularExpressions;
+using FluentValidation;
+using FluentValidation.Results;
+using Moq;
 using WorldCupScoreboard.Models;
+using WorldCupScoreboard.Services;
 using Match = WorldCupScoreboard.Models.Match;
 
 namespace WorldCupScoreboard.Tests
 {
     public class FootballScoreboardTests
     {
-        private FootballScoreboard _scoreboard;
+        private FootballScoreboardService _scoreboard;
 
         [SetUp]
         public void Setup()
         {
-            _scoreboard = new FootballScoreboard();
+            var mockTeamValidator = new Mock<IValidator<(Team, Team)>>();
+            mockTeamValidator.Setup(v => v.Validate(It.IsAny<(Team, Team)>())).Returns(new ValidationResult());
+            _scoreboard = new FootballScoreboardService(mockTeamValidator.Object);
+
         }
 
         [Test]
         public void StartNewMatch()
         {
             // Arrange
-            Team homeTeam = new Team("Mexico", TeamType.Home);
-            Team awayTeam = new Team("Canada", TeamType.Away);
+            var homeTeam = new Team("Mexico", TeamType.Home);
+            var awayTeam = new Team("Canada", TeamType.Away);
 
             // Act
             _scoreboard.StartMatch(homeTeam, awayTeam);
@@ -32,8 +38,8 @@ namespace WorldCupScoreboard.Tests
         public void StartMatch_SameHomeAndAwayTeam_ThrowsArgumentException()
         {
             // Arrange
-            Team sameTeam = new Team("Mexico", TeamType.Home);
-            Team awayTeam = new Team("Mexico", TeamType.Away);
+            var sameTeam = new Team("Mexico", TeamType.Home);
+            var awayTeam = new Team("Mexico", TeamType.Away);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() => _scoreboard.StartMatch(sameTeam, sameTeam));
@@ -43,8 +49,8 @@ namespace WorldCupScoreboard.Tests
         public void StartMatch_SameTypeTeam_ThrowsArgumentException()
         {
             // Arrange
-            Team sameTeam = new Team("Mexico", TeamType.Home);
-            Team awayTeam = new Team("Canada", TeamType.Home);
+            var sameTeam = new Team("Mexico", TeamType.Home);
+            var awayTeam = new Team("Canada", TeamType.Home);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() => _scoreboard.StartMatch(sameTeam, sameTeam));
@@ -65,8 +71,8 @@ namespace WorldCupScoreboard.Tests
         public void UpdateScore_ScoreUpdatedCorrectly()
         {
             // Arrange
-            Team homeTeam = new Team("Spain", TeamType.Home);
-            Team awayTeam = new Team("Brazil", TeamType.Away);
+            var homeTeam = new Team("Spain", TeamType.Home);
+            var awayTeam = new Team("Brazil", TeamType.Away);
             _scoreboard.StartMatch(homeTeam, awayTeam);
 
             // Act
@@ -115,8 +121,8 @@ namespace WorldCupScoreboard.Tests
         public void FinishMatch_RemovesMatchFromScoreboard()
         {
             // Arrange
-            Team homeTeam = new Team("Spain", TeamType.Home);
-            Team awayTeam = new Team("Brazil", TeamType.Away);
+            var homeTeam = new Team("Spain", TeamType.Home);
+            var awayTeam = new Team("Brazil", TeamType.Away);
             _scoreboard.StartMatch(homeTeam, awayTeam);
 
             // Act
