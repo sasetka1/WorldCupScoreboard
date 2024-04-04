@@ -98,9 +98,14 @@ Test interactions between the FootballScoreboardService, validators
 Moq is used to mock dependencies (like validators) in tests.
 
 **Next steps:**
-*More advanced error handling
-*Logging
-*Storage for the matches
-*Documentation
+
+-More advanced error handling
+
+-Logging
+
+-Storage for the matches
+
+-Documentation
+
  
  
