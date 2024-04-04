@@ -4,9 +4,7 @@ namespace WorldCupScoreboard.Models
 {
     public class Team
     {
-        [Required]
         public string Country { get; }
-        [Required]
         public TeamType TeamType { get; }
 
         public Team(string country, TeamType teamType)

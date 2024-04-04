@@ -8,16 +8,18 @@ namespace WorldCupScoreboard.Services
     public class FootballScoreboardService: IFootballScoreboardService
     {
         private List<Match> _matchesInProgress = new List<Match>();
-        private readonly IValidator<(Team, Team)> _validator;
+        private readonly IValidator<(Team, Team)> _teamValidator;
+        private readonly IValidator<MatchUpdateInfo> _matchValidator;
 
-        public FootballScoreboardService(IValidator<(Team, Team)> validator)
+        public FootballScoreboardService(IValidator<(Team, Team)> validator, IValidator<MatchUpdateInfo> matchValidator)
         {
-            _validator = validator;
+            _teamValidator = validator;
+            _matchValidator = matchValidator;
         }
 
         public void StartMatch(Team homeTeam, Team awayTeam)
         {
-            var validationResult =  _validator.Validate((homeTeam, awayTeam));
+            var validationResult =  _teamValidator.Validate((homeTeam, awayTeam));
 
             if (!validationResult.IsValid)
             {
@@ -27,29 +29,25 @@ namespace WorldCupScoreboard.Services
             _matchesInProgress.Add(new Match(homeTeam, awayTeam));
         }
 
-
-        // _validator.ValidateAndThrow(homeTeam);
-        // _validator.ValidateAndThrow(awayTeam);
-        /*            if (homeTeam.Country == awayTeam.Country)
-                    {
-                        throw new ArgumentException("Home team cannot be the same as away team.");
-                    }
-
-                    if (homeTeam.TeamType == awayTeam.TeamType)
-                    {
-                        throw new ArgumentException("Team type cannot be the same type.");
-                    }*/
         public IEnumerable<Match> GetMatchesInProgress()
         {
             return _matchesInProgress.OrderByDescending(m => m.TotalScore()).ThenByDescending(m => m.StartTime);
         }
 
-        public void UpdateScore(string homeTeamName, string awayTeamName, int homeScore, int awayScore)
+        public void UpdateScore(MatchUpdateInfo matchUpdateInfo)
         {
-            var match = _matchesInProgress.Find(m => m.HomeTeam.Country == homeTeamName && m.AwayTeam.Country == awayTeamName);
+            var validationResult = _matchValidator.Validate((matchUpdateInfo));
+
+            if (!validationResult.IsValid)
+            {
+                throw new FluentValidation.ValidationException(validationResult.Errors);
+            }
+
+            var match = _matchesInProgress.Find(m => m.HomeTeam.Country == matchUpdateInfo.HomeTeam && m.AwayTeam.Country == matchUpdateInfo.AwayTeam);
+
             if (match != null)
             {
-                match.UpdateScore(homeScore, awayScore);
+                match.UpdateScore(matchUpdateInfo.HomeScore, matchUpdateInfo.AwayScore);
             }
             else
             {
@@ -57,10 +55,10 @@ namespace WorldCupScoreboard.Services
             }
         }
 
-        public void FinishMatch(string homeTeamName, string awayTeamName)
+        public void FinishMatch(MatchUpdateInfo matchUpdateInfo)
         {
             var matchToRemove = _matchesInProgress.FirstOrDefault(match =>
-                  match.HomeTeam.Country == homeTeamName && match.AwayTeam.Country == awayTeamName);
+                  match.HomeTeam.Country == matchUpdateInfo.HomeTeam && match.AwayTeam.Country == matchUpdateInfo.AwayTeam);
 
             if (matchToRemove == null)
             {

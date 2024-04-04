@@ -2,7 +2,7 @@
 using WorldCupScoreboard.Models;
 using WorldCupScoreboard.Validators;
 
-namespace WorldCupScoreboardTest
+namespace WorldCupScoreboard.Test
 {
     [TestFixture]
     public class TeamValidatorTests
@@ -16,7 +16,7 @@ namespace WorldCupScoreboardTest
         }
 
         [Test]
-        public void TeamValidator_WhenValidData_ReturnsValidResult()
+        public void TeamValidator_WhenValidData_ShouldPass()
         {
             // Arrange
             var team1 = new Team("Team1", TeamType.Home);
@@ -31,7 +31,7 @@ namespace WorldCupScoreboardTest
         }
 
         [Test]
-        public void TeamValidator_WhenInvalidDataTheSameTeamType_ReturnsInvalidResult()
+        public void TeamValidator_WhenInvalidDataTheSameTeamType_ShouldFail()
         {
             // Arrange
             var team1 = new Team("Team1", TeamType.Home);
@@ -46,7 +46,7 @@ namespace WorldCupScoreboardTest
         }
 
         [Test]
-        public void TeamValidator_WhenInvalidDataTheSameCountry_ReturnsInvalidResult()
+        public void TeamValidator_WhenInvalidDataTheSameCountry_ShouldFail()
         {
             // Arrange
             var team1 = new Team("Poland", TeamType.Home);
@@ -61,7 +61,7 @@ namespace WorldCupScoreboardTest
         }
 
         [Test]
-        public void TeamValidator_WhenInvalidDataCountryIsEmpty_ReturnsInvalidResult()
+        public void TeamValidator_WhenInvalidDataCountryIsEmpty_ShouldFail()
         {
             // Arrange
             var team1 = new Team("Poland", TeamType.Home);
@@ -76,7 +76,7 @@ namespace WorldCupScoreboardTest
         }
 
         [Test]
-        public void TeamValidator_WhenInvalidDataTeamIsNull_ReturnsInvalidResult()
+        public void TeamValidator_WhenInvalidDataTeamIsNull_ShouldFail()
         {
             // Arrange
             var team1 = new Team("Poland", TeamType.Home);

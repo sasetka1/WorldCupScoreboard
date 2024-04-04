@@ -8,8 +8,8 @@ namespace WorldCupScoreboard.Services
 
         public IEnumerable<Match> GetMatchesInProgress();
 
-        public void UpdateScore(string homeTeamName, string awayTeamName, int homeScore, int awayScore);
+        public void UpdateScore(MatchUpdateInfo matchUpdateInfo);
 
-        public void FinishMatch(string homeTeamName, string awayTeamName);
+        public void FinishMatch(MatchUpdateInfo matchUpdateInfo);
     }
 }

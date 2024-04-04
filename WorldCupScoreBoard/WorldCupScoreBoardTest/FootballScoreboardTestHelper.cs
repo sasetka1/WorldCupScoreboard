@@ -1,14 +1,9 @@
 ﻿using FluentValidation.Results;
 using FluentValidation;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WorldCupScoreboard.Models;
 
-namespace WorldCupScoreboardTest
+namespace WorldCupScoreboard.Test
 {
     public class FootballScoreboardTestHelper
     {
@@ -27,6 +22,17 @@ namespace WorldCupScoreboardTest
             // Setup for validation failure when teams are of the same type
             mockTeamValidator.Setup(v => v.Validate(It.Is<(Team, Team)>(t => t.Item1.TeamType == t.Item2.TeamType)))
                              .Returns(new ValidationResult(new[] { new ValidationFailure("", "Team type cannot be the same type.") }));
+
+            return mockTeamValidator;
+        }
+
+        public static Mock<IValidator<MatchUpdateInfo>> CreateMockMatchUpdateInfoValidator()
+        {
+            var mockTeamValidator = new Mock<IValidator<MatchUpdateInfo>>();
+
+            // Setup for successful validation
+            mockTeamValidator.Setup(v => v.Validate(It.IsAny<MatchUpdateInfo>()))
+                             .Returns(new ValidationResult());
 
             return mockTeamValidator;
         }

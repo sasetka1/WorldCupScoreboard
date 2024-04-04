@@ -1,9 +1,8 @@
 using FluentValidation;
-using FluentValidation.Results;
 using Moq;
 using WorldCupScoreboard.Models;
 using WorldCupScoreboard.Services;
-using WorldCupScoreboardTest;
+using WorldCupScoreboard.Test;
 using Match = WorldCupScoreboard.Models.Match;
 
 namespace WorldCupScoreboard.Tests
@@ -12,17 +11,19 @@ namespace WorldCupScoreboard.Tests
     {
         private FootballScoreboardService _scoreboard;
         private Mock<IValidator<(Team, Team)>> _mockTeamValidator;
+        private Mock<IValidator<MatchUpdateInfo>> _mockMatchUpdateValidator;
 
         [SetUp]
         public void Setup()
         {
             _mockTeamValidator = FootballScoreboardTestHelper.CreateMockTeamValidator();
-            _scoreboard = new FootballScoreboardService(_mockTeamValidator.Object);
+            _mockMatchUpdateValidator = FootballScoreboardTestHelper.CreateMockMatchUpdateInfoValidator();
+            _scoreboard = new FootballScoreboardService(_mockTeamValidator.Object, _mockMatchUpdateValidator.Object);
         }
 
 
         [Test]
-        public void StartNewMatch_OnlyOneMatchInProgress()
+        public void StartNewMatch_OnlyOneMatchInProgress_ShouldPass()
         {
             // Arrange
             var homeTeam = new Team("Mexico", TeamType.Home);
@@ -64,12 +65,14 @@ namespace WorldCupScoreboard.Tests
             _scoreboard.StartMatch(new Team("Spain", TeamType.Home), new Team("Brazil", TeamType.Away));
             _scoreboard.StartMatch(new Team("Germany", TeamType.Home), new Team("France", TeamType.Away));
 
+            var matchUpdateInfo = new MatchUpdateInfo() { HomeTeam = "Italy", AwayTeam = "Uruguay", HomeScore = 2, AwayScore = 2 };
+
             // Act and Assert
-            Assert.Throws<InvalidOperationException>(() => _scoreboard.UpdateScore("Italy", "Uruguay", 2, 1));
+            Assert.Throws<InvalidOperationException>(() => _scoreboard.UpdateScore(matchUpdateInfo));
         }
 
         [Test]
-        public void UpdateScore_ScoreUpdatedCorrectly()
+        public void UpdateScore_ScoreUpdatedCorrectly_ShouldPass()
         {
             // Arrange
             var homeTeam = new Team("Spain", TeamType.Home);
@@ -77,7 +80,9 @@ namespace WorldCupScoreboard.Tests
             _scoreboard.StartMatch(homeTeam, awayTeam);
 
             // Act
-            _scoreboard.UpdateScore("Spain", "Brazil", 2, 1);
+
+            var matchUpdateInfo = new MatchUpdateInfo() { HomeTeam = "Spain", AwayTeam = "Brazil", HomeScore = 2, AwayScore = 1 };
+            _scoreboard.UpdateScore(matchUpdateInfo);
 
             // Assert
             var match = _scoreboard.GetMatchesInProgress().FirstOrDefault();
@@ -87,7 +92,7 @@ namespace WorldCupScoreboard.Tests
         }
 
         [Test]
-        public void GetMatchesInProgress_SummaryIsOrderedCorrectly()
+        public void GetMatchesInProgress_SummaryIsOrderedCorrectly_ShoulPass()
         {
             // Arrange
             _scoreboard.StartMatch(new Team("Mexico", TeamType.Home), new Team("Canada", TeamType.Away));
@@ -97,11 +102,11 @@ namespace WorldCupScoreboard.Tests
             _scoreboard.StartMatch(new Team("Argentina", TeamType.Home), new Team("Australia", TeamType.Away));
 
             // Act
-            _scoreboard.UpdateScore("Mexico", "Canada", 0, 5);
-            _scoreboard.UpdateScore("Spain", "Brazil", 10, 2);
-            _scoreboard.UpdateScore("Germany", "France", 2, 2);
-            _scoreboard.UpdateScore("Uruguay", "Italy", 6, 6);
-            _scoreboard.UpdateScore("Argentina", "Australia", 3, 1);
+            _scoreboard.UpdateScore(new MatchUpdateInfo() { HomeTeam = "Mexico", AwayTeam = "Canada", HomeScore = 0, AwayScore = 5 });
+            _scoreboard.UpdateScore(new MatchUpdateInfo() { HomeTeam = "Spain", AwayTeam = "Brazil", HomeScore = 10, AwayScore = 2 });
+            _scoreboard.UpdateScore(new MatchUpdateInfo() { HomeTeam = "Germany", AwayTeam = "France", HomeScore = 2, AwayScore = 2 });
+            _scoreboard.UpdateScore(new MatchUpdateInfo() { HomeTeam = "Uruguay", AwayTeam = "Italy", HomeScore = 6, AwayScore = 6 });
+            _scoreboard.UpdateScore(new MatchUpdateInfo() { HomeTeam = "Argentina", AwayTeam = "Australia", HomeScore = 3, AwayScore = 1 });
 
             // Assert
             var expectedSummary = new List<Match>
@@ -119,7 +124,7 @@ namespace WorldCupScoreboard.Tests
         }
 
         [Test]
-        public void FinishMatch_RemovesMatchFromScoreboard()
+        public void FinishMatch_RemovesMatchFromScoreboard_ShouldPass()
         {
             // Arrange
             var homeTeam = new Team("Spain", TeamType.Home);
@@ -127,10 +132,26 @@ namespace WorldCupScoreboard.Tests
             _scoreboard.StartMatch(homeTeam, awayTeam);
 
             // Act
-            _scoreboard.FinishMatch("Spain", "Brazil");
+            _scoreboard.FinishMatch(new MatchUpdateInfo() { HomeTeam = "Spain", AwayTeam = "Brazil" });
 
             // Assert
             Assert.That(_scoreboard.GetMatchesInProgress().Count(), Is.EqualTo(0));
+        }
+
+
+        [Test]
+        public void FinishMatch_NoTeam_ShouldFail()
+        {
+            // Arrange
+            var homeTeam = new Team("Spain", TeamType.Home);
+            var awayTeam = new Team("Brazil", TeamType.Away);
+            _scoreboard.StartMatch(homeTeam, awayTeam);
+
+            //Act
+            var matchUpdateInfo = new MatchUpdateInfo() { HomeTeam = "Poland", AwayTeam = "Brazil" };
+
+            // Assert
+            Assert.Throws<ArgumentException>(() => _scoreboard.FinishMatch(matchUpdateInfo));
         }
     }
 
